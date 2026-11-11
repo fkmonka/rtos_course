@@ -4,3 +4,6 @@
 [submodule "common/cmsis-device-g4"]
 	path = common/cmsis-device-g4
 	url = https://github.com/STMicroelectronics/cmsis-device-g4.git
+[submodule "common/stm32-mw-freertos"]
+	path = common/stm32-mw-freertos
+	url = https://github.com/STMicroelectronics/stm32-mw-freertos.git
