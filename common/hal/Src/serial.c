@@ -29,7 +29,7 @@ HAL_Status_t halSerialInit(void)
 		);
 
 	LPUART1->BRR = uart_div;
-	volatile uint32_t debug_brr = LPUART1->BRR;
+
 	/**/
 	LPUART1->CR1 |= (USART_CR1_TE | USART_CR1_RE);
 
