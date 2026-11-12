@@ -1,6 +1,7 @@
 #include "serial.h"
 #include "stm32g4xx.h"
 #include "cmsis_helpers.h"
+#include "cmsis_os.h"
 
 HAL_Status_t halSerialInit(void)
 {
@@ -44,14 +45,63 @@ HAL_Status_t halSerialPut(const char data)
     {
         /* Czekaj na możliwość zapisania danych. */
     }
+    /*dodatkowo bo pela wyzej nie blokowala tak jak u prowadzacego*/
+    while ((LPUART1->CR1 & USART_CR1_UE) == 0U)
+    {
+    }
 
     LPUART1->TDR = (uint8_t)data;
 
     return HAL_OK;
 }
 
+HAL_Status_t halSerialPut_Timeout(const char data, uint32_t timeout)
+{
+	uint32_t freq = osKernelGetTickFreq();
+	uint32_t ticks_start = osKernelGetTickCount();
+
+
+    while (((LPUART1->ISR & USART_ISR_TXE_TXFNF) == 0U) || ((LPUART1->CR1 & USART_CR1_UE) == 0U))
+    {
+        /* Czekaj na możliwość zapisania danych. */
+    	if(osKernelGetTickCount() > ticks_start + timeout)
+    	{
+    		return HAL_TIMEOUT;
+    	}
+    }
+
+    LPUART1->TDR = (uint8_t)data;
+
+    return HAL_OK;
+}
+
+HAL_Status_t halSerialSend_Timeout(const char * txt,uint32_t timeout)
+{
+	while(*txt != 0) //the end of string
+	{
+		HAL_Status_t status = halSerialPut_Timeout(*txt,timeout);
+		if(status == HAL_TIMEOUT)
+		{
+			return HAL_TIMEOUT;
+		}
+	}
+	return HAL_OK;
+}
+
+HAL_Status_t halSerialSend_(const char * txt)
+{
+	while(*txt != 0) //the end of string
+	{
+		HAL_Status_t status = halSerialPut(*txt);
+		if(status == HAL_TIMEOUT)
+		{
+			return HAL_TIMEOUT;
+		}
+	}
+	return HAL_OK;
+}
 int __io_putchar(int ch)
 {
-	halSerialPut(ch);
+	halSerialPut_Timeout(ch, 50);
 	return ch;
 }

@@ -2,7 +2,8 @@
 #define _HAL_COMMON
 
 typedef enum{
-	HAL_OK = 0x00U
+	HAL_OK = 0x00U,
+	HAL_TIMEOUT = 0x01U
 }HAL_Status_t;
 
 #define CONFIG_APB1_CLOCK 16000000
