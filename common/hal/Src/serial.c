@@ -1,7 +1,7 @@
 #include "serial.h"
 #include "stm32g4xx.h"
 #include "cmsis_helpers.h"
-#include "cmsis_os.h"
+#include "timebase.h"
 
 HAL_Status_t halSerialInit(void)
 {
@@ -58,13 +58,13 @@ HAL_Status_t halSerialPut(const char data)
 HAL_Status_t halSerialPut_Timeout(const char data, uint32_t timeout)
 {
 	//uint32_t freq = osKernelGetTickFreq();
-	uint32_t ticks_start = osKernelGetTickCount();
+	uint32_t ticks_start = halGetTicks();
 
 
     while (((LPUART1->ISR & USART_ISR_TXE_TXFNF) == 0U) || ((LPUART1->CR1 & USART_CR1_UE) == 0U))
     {
         /* Czekaj na możliwość zapisania danych. */
-    	if(osKernelGetTickCount() > ticks_start + timeout)
+    	if(halGetTicks() > ticks_start + timeout)
     	{
     		return HAL_TIMEOUT;
     	}
