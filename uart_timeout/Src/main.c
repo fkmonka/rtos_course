@@ -1,7 +1,7 @@
 #include <stdint.h>
+#include <stdio.h>
 #include "stm32g4xx.h" // dzieki temu plikowi zamiast adresu rejestru mozemy od razu użyć już stworzone makro
 #include "cmsis_os.h"
-#include <stdio.h>
 #include "serial.h"
 //change debug tool in .launch file:
 //<stringAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_NAME" value="/usr/bin/gdb-multiarch"/>
@@ -9,6 +9,7 @@
 /*https://arm-software.github.io/CMSIS_5/develop/RTOS2/html/group__CMSIS__RTOS__KernelCtrl.html#ga6f7764e7250c5c5364c00c45a5d1d199*/
 
 static volatile uint32_t cnt1;
+static volatile uint32_t err_cnt1;
 
 void Task1()
 {
@@ -16,8 +17,17 @@ void Task1()
 
 	while(1)
 	{
-		cnt1++;
-		printf("Ping\r\n");
+		//printf("Ping\r\n");
+
+		HAL_Status_t status = halSerialSend_Timeout("Ping\r\n", 100);
+		if(status ==HAL_OK)
+		{
+			cnt1++;
+		}
+		else
+		{
+			err_cnt1++;
+		}
 		osDelay(freq);
 	}
 }
@@ -39,7 +49,8 @@ void Task2()
 int main(void)
 {
 	halSerialInit();
-
+	//printf("TEST\r\n");
+	halSerialSend("TEST\r\n");
 	osKernelInitialize();
 
 	osThreadNew(Task1, NULL,NULL);

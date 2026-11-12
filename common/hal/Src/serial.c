@@ -57,7 +57,7 @@ HAL_Status_t halSerialPut(const char data)
 
 HAL_Status_t halSerialPut_Timeout(const char data, uint32_t timeout)
 {
-	uint32_t freq = osKernelGetTickFreq();
+	//uint32_t freq = osKernelGetTickFreq();
 	uint32_t ticks_start = osKernelGetTickCount();
 
 
@@ -84,11 +84,12 @@ HAL_Status_t halSerialSend_Timeout(const char * txt,uint32_t timeout)
 		{
 			return HAL_TIMEOUT;
 		}
+		txt++;
 	}
 	return HAL_OK;
 }
 
-HAL_Status_t halSerialSend_(const char * txt)
+HAL_Status_t halSerialSend(const char * txt)
 {
 	while(*txt != 0) //the end of string
 	{
@@ -97,6 +98,7 @@ HAL_Status_t halSerialSend_(const char * txt)
 		{
 			return HAL_TIMEOUT;
 		}
+		txt++;
 	}
 	return HAL_OK;
 }
