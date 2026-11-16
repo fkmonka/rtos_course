@@ -33,6 +33,7 @@ void Slave(void *arg)
 		 *  ..NoClear - czy maja byc opuszcozne flagi po wykonaniu funkcji? jeden slave moglby odebrac flage
 		 *   i ja zdjac a drugi ktory tez czeka na flage moglby juz jej nie dostac
 		 */
+		osEventFlagsClear(event_id, 0x1);
 		cnt_slave++;
 	}
 }
