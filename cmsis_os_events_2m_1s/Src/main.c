@@ -8,6 +8,8 @@
 
 #define MASTER1_FLAG (0x01<<0) // 1 przesunieta na pozycje 0
 #define MASTER2_FLAG (0x01<<1) // 1 przesunieta na pozycje 1
+#define SLAVE1_FLAG (0x01<<2)
+#define SLAVE2_FLAG (0x01<<3)
 
 static volatile osEventFlagsId_t event_id;
 static volatile uint32_t cnt_master_1;
@@ -21,6 +23,7 @@ void Master1(void *arg)
 		osDelay(1000);
 		cnt_master_1++;
 		osEventFlagsSet(event_id, MASTER1_FLAG); // 0x01 -flags -> flaga na najmlodszym bicie
+		osEventFlagsWait(event_id, SLAVE1_FLAG, osFlagsWaitAny, osWaitForever);
 
 
 	}
@@ -33,7 +36,7 @@ void Master2(void *arg)
 		osDelay(500);
 		cnt_master_2++;
 		osEventFlagsSet(event_id, MASTER2_FLAG); // 0x10 -flags -> flaga na najmlodszym bicie
-
+		osEventFlagsWait(event_id, SLAVE2_FLAG, osFlagsWaitAny, osWaitForever);
 
 	}
 }
@@ -47,6 +50,10 @@ void Slave(void *arg)
 
 		osEventFlagsClear(event_id, MASTER1_FLAG | MASTER2_FLAG);
 		cnt_slave++;
+
+		//ustawiamy dwie flagi dla kazdego mastera bo funkcja wait kasuje flage
+		//gdy nie ma opcji wlaczonej wiec drugi slave by sie nie odblokowal
+		osEventFlagsSet(event_id, SLAVE1_FLAG | SLAVE2_FLAG);
 	}
 }
 int main(void)
