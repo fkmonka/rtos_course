@@ -3,7 +3,7 @@
 #include "cmsis_os.h"
 #include <stdio.h>
 #include "serial.h"
-
+//<stringAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_NAME" value="/usr/bin/gdb-multiarch"/>
 static volatile uint32_t cnt1;
 static volatile uint32_t cnt2;
 
