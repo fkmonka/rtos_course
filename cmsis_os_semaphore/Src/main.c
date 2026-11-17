@@ -19,6 +19,8 @@ volatile static uint32_t queue_err_full = 0;
 volatile static uint32_t queue_err_empty = 0;
 
 volatile osMutexId_t queue_mutex;
+volatile osSemaphoreId_t queue_semaphore_filled;
+volatile osSemaphoreId_t queue_semaphore_empty;
 
 void queue_put(uint32_t data)
 {
@@ -60,15 +62,15 @@ void Producer(void* args)
 	uint32_t cnt = 0;
 	while(1)
 	{
-		/*there should be check if queue is full not to loose data that shall be saved*/
-		//czyli jak kolejka jest pelna to ten put nie doda nam nic dlatego zostawiam cnt
-		//taki jaki byl i w nastepnym obiegu petli znow probujemy dodac
+		//empty starts at 4 and can put only 4 without poping
+		osSemaphoreAcquire(queue_semaphore_empty, osWaitForever);
 		queue_put(cnt);
 		if(queue_err_full == 0)
 		{
 			cnt++;
+			osSemaphoreRelease(queue_semaphore_filled);
 		}
-		osDelay(rand() % 500);
+		osDelay(rand() % 300);
 	}
 }
 
@@ -76,12 +78,15 @@ void Consumer(void* args)
 {
 	while(1)
 	{
+		//mamy gwarancje ze osAcquaire nie zostanie rzerwane - jak atomowa operacja przez os traktowane
+		osSemaphoreAcquire(queue_semaphore_filled, osWaitForever);
 		uint32_t data =queue_pop();
 		if(queue_err_empty == 0)
 		{
 			printf("%d\r\n",data);
 		}
-		osDelay(rand() % 1500); // CO JAKIS CZS WIEKSZE NIZ 1000 mniejsze niz 1500
+		osDelay(rand() % 900);
+		osSemaphoreRelease(queue_semaphore_empty);
 	}
 }
 int main(void)
@@ -92,6 +97,8 @@ int main(void)
 
 	queue_mutex = osMutexNew(NULL);
 
+	queue_semaphore_filled = osSemaphoreNew(QUEUE_SIZE, 0, NULL); //max count, start val, ptr na struct atrybut
+	queue_semaphore_empty = osSemaphoreNew(QUEUE_SIZE,QUEUE_SIZE,NULL);
 	osThreadNew(Producer, NULL, NULL);
 	osThreadNew(Consumer, NULL, NULL);
 
